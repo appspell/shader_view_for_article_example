@@ -103,7 +103,7 @@ class QuadRender(
 
     override fun onDrawFrame(gl: GL10?) {
         // clear the our "screen"
-        GLES30.glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
+        GLES30.glClearColor(1.0f, 1.0f, 1.0f, 0.0f)
         GLES30.glClear(GLES30.GL_DEPTH_BUFFER_BIT or GLES30.GL_COLOR_BUFFER_BIT)
 
         // use program
@@ -122,14 +122,11 @@ class QuadRender(
         val uMyUniformValue = floatArrayOf(1.0f, 0.75f, 0.95f, 1f) // some values that we're going to send to the fragment shader
         GLES30.glUniform4fv(uMyUniform, 1, uMyUniformValue, 0)
 
-        // draw our quad
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-
         // activate blending for textures (to support transparency)
         GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
         GLES30.glEnable(GLES20.GL_BLEND)
 
-        // draw scene
+        // draw our quad
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4)
         checkGlError("glDrawArrays")
 

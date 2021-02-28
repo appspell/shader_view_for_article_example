@@ -6,6 +6,10 @@ import android.util.AttributeSet
 
 private const val OPENGL_VERSION = 3
 
+private const val BUFFER_BIT_PER_CHANNEL = 8
+private const val BUFFER_BIT_DEPTH = 16
+private const val BUFFER_BIT_STENCIL = 0
+
 class ShaderView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -16,6 +20,16 @@ class ShaderView @JvmOverloads constructor(
     init {
         // define OpenGL version
         setEGLContextClientVersion(OPENGL_VERSION)
+
+        // set RGBA_8888 to support transparency
+        setEGLConfigChooser(
+            BUFFER_BIT_PER_CHANNEL,
+            BUFFER_BIT_PER_CHANNEL,
+            BUFFER_BIT_PER_CHANNEL,
+            BUFFER_BIT_PER_CHANNEL,
+            BUFFER_BIT_DEPTH,
+            BUFFER_BIT_STENCIL
+        )
 
         // load shader's source code from RAW files
         val vsh = context.resources.getRawTextFile(R.raw.vertex_shader)
