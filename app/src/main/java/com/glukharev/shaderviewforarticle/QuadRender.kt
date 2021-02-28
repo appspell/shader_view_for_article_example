@@ -128,14 +128,11 @@ class QuadRender(
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0) // same texture slot which we've used on initialization
         GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, uTextureId)
 
-        // draw our quad
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
-
         // activate blending for textures (to support transparency)
         GLES30.glBlendFunc(GLES30.GL_SRC_ALPHA, GLES30.GL_ONE_MINUS_SRC_ALPHA)
         GLES30.glEnable(GLES20.GL_BLEND)
 
-        // draw scene
+        // draw our quad
         GLES30.glDrawArrays(GLES30.GL_TRIANGLE_STRIP, 0, 4)
         checkGlError("glDrawArrays")
 
