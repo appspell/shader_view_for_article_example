@@ -1,5 +1,6 @@
 package com.glukharev.shaderviewforarticle
 
+import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.opengl.GLES30
 import android.opengl.Matrix
@@ -25,14 +26,16 @@ const val VERTEX_SHADER_IN_TEXTURE_COORD = "inTextureCoord"
 const val VERTEX_SHADER_UNIFORM_MATRIX_MVP = "uMVPMatrix"
 const val VERTEX_SHADER_UNIFORM_MATRIX_STM = "uSTMatrix"
 
-const val FRAGMENT_SHADER_UNIFORM_MY_UNIFORM = "uMyUniform"
+const val FRAGMENT_SHADER_UNIFORM_TEXTURE = "uTexture"
 
 private const val UNKNOWN_PROGRAM = -1
 private const val UNKNOWN_ATTRIBUTE = -1
 
+// TOOD it's not a good way to send all this data via constructor but for proof of concept it's ok
 class QuadRender(
     private var vertexShaderSource: String, // source code of vertex shader
     private var fragmentShaderSource: String,// source code of fragment shader
+    private var textureBitmap: Bitmap
 ) : GLTextureView.Renderer {
     private val quadVertices: FloatBuffer
 
@@ -44,7 +47,8 @@ class QuadRender(
     private var uMVPMatrixHandle = UNKNOWN_ATTRIBUTE
     private var uSTMatrixHandle = UNKNOWN_ATTRIBUTE
 
-    private var uMyUniform = UNKNOWN_ATTRIBUTE
+    private var uTextureId = UNKNOWN_ATTRIBUTE
+    private var uTextureHandle = UNKNOWN_ATTRIBUTE
 
     private var program = UNKNOWN_PROGRAM
 
@@ -92,9 +96,10 @@ class QuadRender(
         if (uSTMatrixHandle == UNKNOWN_ATTRIBUTE) throw RuntimeException("Could not get uniform location for $VERTEX_SHADER_UNIFORM_MATRIX_STM")
 
         // (!) bind attributes for fragment shader
-        uMyUniform = GLES30.glGetUniformLocation(program, FRAGMENT_SHADER_UNIFORM_MY_UNIFORM)
-        checkGlError("glGetUniformLocation $FRAGMENT_SHADER_UNIFORM_MY_UNIFORM")
-        if (uMyUniform == UNKNOWN_ATTRIBUTE) throw RuntimeException("Could not get uniform location for $FRAGMENT_SHADER_UNIFORM_MY_UNIFORM")
+
+        // upload bitmap to GPU
+        uTextureHandle = GLES30.glGetUniformLocation(program, FRAGMENT_SHADER_UNIFORM_TEXTURE)
+        uTextureId = textureBitmap.toGlTexture(needToRecycle = true, GLES30.GL_TEXTURE0)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -103,7 +108,7 @@ class QuadRender(
 
     override fun onDrawFrame(gl: GL10?) {
         // clear the our "screen"
-        GLES30.glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
+        GLES30.glClearColor(1.0f, 1.0f, 1.0f, 0.0f)
         GLES30.glClear(GLES30.GL_DEPTH_BUFFER_BIT or GLES30.GL_COLOR_BUFFER_BIT)
 
         // use program
@@ -119,8 +124,9 @@ class QuadRender(
         GLES30.glUniformMatrix4fv(uSTMatrixHandle, 1, false, matrixSTM, 0)
 
         // (!) update uniforms for fragment shader
-        val uMyUniformValue = floatArrayOf(1.0f, 0.75f, 0.95f, 1f) // some values that we're going to send to the fragment shader
-        GLES30.glUniform4fv(uMyUniform, 1, uMyUniformValue, 0)
+        GLES30.glUniform1i(uTextureHandle, GLES30.GL_TEXTURE0.convertTextureSlotToIndex()) // convertTextureSlotToIndex returns 0 as far as it's slot number 0
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0) // same texture slot which we've used on initialization
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, uTextureId)
 
         // draw our quad
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
@@ -229,4 +235,41 @@ class QuadRender(
         GLES30.glEnableVertexAttribArray(attrLocation)
         checkGlError("glEnableVertexAttribArray $attrName")
     }
+
+    private fun Int.convertTextureSlotToIndex(): Int =
+        when (this) {
+            GLES30.GL_TEXTURE0 -> 0
+            GLES30.GL_TEXTURE1 -> 1
+            GLES30.GL_TEXTURE2 -> 2
+            GLES30.GL_TEXTURE3 -> 3
+            GLES30.GL_TEXTURE4 -> 4
+            GLES30.GL_TEXTURE5 -> 5
+            GLES30.GL_TEXTURE6 -> 6
+            GLES30.GL_TEXTURE7 -> 7
+            GLES30.GL_TEXTURE8 -> 8
+            GLES30.GL_TEXTURE9 -> 9
+            GLES30.GL_TEXTURE10 -> 10
+            GLES30.GL_TEXTURE11 -> 11
+            GLES30.GL_TEXTURE12 -> 12
+            GLES30.GL_TEXTURE13 -> 13
+            GLES30.GL_TEXTURE14 -> 14
+            GLES30.GL_TEXTURE15 -> 15
+            GLES30.GL_TEXTURE16 -> 16
+            GLES30.GL_TEXTURE17 -> 17
+            GLES30.GL_TEXTURE18 -> 18
+            GLES30.GL_TEXTURE19 -> 19
+            GLES30.GL_TEXTURE20 -> 20
+            GLES30.GL_TEXTURE21 -> 21
+            GLES30.GL_TEXTURE22 -> 22
+            GLES30.GL_TEXTURE23 -> 23
+            GLES30.GL_TEXTURE24 -> 24
+            GLES30.GL_TEXTURE25 -> 25
+            GLES30.GL_TEXTURE26 -> 26
+            GLES30.GL_TEXTURE27 -> 27
+            GLES30.GL_TEXTURE28 -> 28
+            GLES30.GL_TEXTURE29 -> 29
+            GLES30.GL_TEXTURE30 -> 30
+            GLES30.GL_TEXTURE31 -> 31
+            else -> 0
+        }
 }
